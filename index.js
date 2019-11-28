@@ -3,6 +3,8 @@ const speakeasy = require('speakeasy')
 const chalk = require('chalk')
 const log = console.log
 
+process.title = 'Google 2FA'
+
 function getTwoFactor(secret) {
   return new Promise((resolve, reject) => {
     let token = speakeasy.totp({
