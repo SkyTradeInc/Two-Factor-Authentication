@@ -6,7 +6,7 @@ Using your Raspberry Pi as a hardware security key for two-factor authentication
 
 <img alt="Raspberry Pi kit" src="documentation/pikit.jpg" width="300">
 
-- 3.5inch TFT
+- 3.5inch TFT Touchscreen Dispaly
 
 <img alt="TFT Pi kit" src="documentation/tftkit.jpg" width="300">
 
@@ -20,7 +20,6 @@ If your screen is showing up as blank white you will need to install the TFT dis
 Make sure `nodejs` and `npm` is installed by running `node -v` and `npm -v` respectively
 
 #### 1. Clone and install dependencies
-
 
 ```
 git clone https://github.com/SkyTradeInc/Two-Factor-Authentication.git
@@ -76,3 +75,9 @@ Add the following lines
 ```
 sudo reboot
 ```
+
+A few seconds after your Raspberry Pi reboots you will be displayed the dashboard
+
+#### Troubleshooting
+
+If you get **This site can't be reached** in your browser, there was an error with your configuration file `secrets.json`, make sure it's valid JSON
