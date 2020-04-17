@@ -1,4 +1,4 @@
-process.title = 'Google 2FA'
+process.title = '2FA'
 const dotenv = require('dotenv').config()
 const speakeasy = require('speakeasy')
 const chalk = require('chalk')
