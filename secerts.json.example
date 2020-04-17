@@ -1,0 +1,12 @@
+[
+  {
+    "website": "Google",
+    "secret": "KNPHN3Q6IK5X9ZPY",
+    "email": "example@gmail.com"
+  },
+  {
+    "website": "Github",
+    "secret": "CRDJ6INNLA5CAMPP",
+    "email": "example@gmail.com"
+  }
+]
