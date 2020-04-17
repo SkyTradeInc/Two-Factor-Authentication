@@ -1,0 +1,122 @@
+<style>
+
+.coderow {
+	padding: 10px 20px;
+    background-color: white;
+    border-top: 15px solid #f2f2f2;
+    font-family: 'Roboto', sans-serif;
+}
+
+.paddingL {
+	padding-left: 20px;
+}
+
+.paddingR {
+	padding-right: 20px;
+}
+
+
+.endrow {
+	border-bottom: 15px solid #f2f2f2;
+
+}
+
+h3 {
+	color: #757575;
+}
+.code {
+	color: #4285f4;
+    font-weight: 500;
+    font-size: xx-large;
+}
+
+.codelabel {
+    color: #757575;
+}
+
+.changeUp {
+  color:#468847!important;
+}
+
+.changeWarning {
+  color:#cb8a12!important;
+}
+
+.changeDown {
+  color:#b94a48!important;
+}
+</style>
+
+
+
+<html>
+	<head>
+		<title> 2FA </title>
+		<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js" integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+	</head>
+
+	<body>
+		<div class="container">
+			<br>
+			<div class="d-flex justify-content-between align-items-center">
+			<h3 class="paddingL"> Two Factor Authentication</h3>
+			<span id="connectionStatus" class="paddingR float-md-right">
+				<i class="fas fa-wifi changeDown"></i>
+			</span>
+			</div>
+			<br>
+			<div id="datarows">
+				<div class="coderow">
+					<div class="code changeDown">
+					000 000
+					</div>
+					<div class="codelabel">
+					Binance
+					</div>
+				</div>
+			</div>
+			<div class="endrow"></div>
+		</div>
+
+
+	</body>
+</html>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	let connected = false
+
+  var socket = io('/');
+
+	socket.on('connect', () => {
+		document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi changeUp"></i>'
+	});
+
+  socket.on('2fa', (payload) => {
+		let render = ''
+		payload.forEach((data) => {
+				let code = data.code.split('')
+				code.splice(3, 0, ' ')
+				render += `<div class="coderow">
+					<div class="codelabel">
+					${data.label}
+					</div>
+					<div class="code">
+					${code.join('')}
+					</div>
+					<div class="codelabel">
+					${data.email}
+					</div>
+
+				</div>`
+		})
+		document.getElementById('datarows').innerHTML = render
+	});
+
+  socket.on('disconnect', () => {
+		connected = false
+	});
+</script>
