@@ -2,8 +2,10 @@
 
 This project implements one-time passcode (OTP) generation using open standards developed by [Initiative for Open Authentication (OATH)](http://www.openauthentication.org/)
 
-![2FA CLI](documentation/console.png?raw=true "2FA Command Line")
 ![2FA Webpage](documentation/website.png?raw=true "2FA Webpage")
+
+![2FA CLI](documentation/console.png?raw=true "2FA Command Line")
+
 
 ## Getting Started
 
@@ -41,6 +43,4 @@ node index
 
 If there is no errors in your `secrets.json` file, your OTP will display in your console
 
-
-
-And if you go to http://localhost:6060
+Front end implementation can be accessed on http://localhost:6060
