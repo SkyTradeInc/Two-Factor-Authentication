@@ -6,7 +6,9 @@ This project implements one-time passcode (OTP) generation using open standards 
 
 ![2FA CLI](documentation/console.png?raw=true "2FA Command Line")
 
-To convert your Raspberry Pi to a hadware security key two-factor authentication, read the guide [here](RASPBERRY-PI.md)
+## Rasperry Pi hadware key
+
+To convert your Raspberry Pi to a hadware security key two-factor authentication, read the [guide here](RASPBERRY-PI.md)
 
 ## Getting Started
 
