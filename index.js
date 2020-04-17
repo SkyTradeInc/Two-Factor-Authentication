@@ -1,6 +1,8 @@
 process.title = '2FA'
 const dotenv = require('dotenv').config()
 const speakeasy = require('speakeasy')
+const qr = require('qrcode');
+
 const chalk = require('chalk')
 const path = require('path');
 const fs = require('fs')
@@ -13,13 +15,27 @@ const log = console.log
 const app = express()
 const port = process.env.SERVER_PORT || 6060
 
+const secrets = require('./secrets.json')
+
 const server = app.listen(port, () => {
   app.use(express.json())
   app.use(helmet())
-  app.use('/', (request, response) => {
+  app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname + '/index.html'));
   })
+  app.post('/', async (request, response) => {
+    const { index } = request.body
+    getTwoFactorURI(secrets[index].website, secrets[index].secret, secrets[index].email)
+      .then(payload => {
+        response.status(200).send(payload)
+      })
+      .catch(error => {
+        console.log(error)
+        response.status(401).send(error)
+      })
+  })
   console.log(`Listening on port: ${port}`)
+  process.title = `2FA | Listening on port ${port}`
 })
 
 const io = socket(server);
@@ -34,10 +50,18 @@ function getTwoFactor(secret) {
   })
 }
 
-ready = false
-keys = []
+function getTwoFactorURI(website, secret, email) {
+  return new Promise((resolve, reject) => {
+    let payload =  { otpauth_url: `otpauth://totp/${email}?secret=${secret}&issuer=${website}` }
+      qr.toDataURL(payload.otpauth_url)
+        .then(imageURI => {
+          payload.imageURI = imageURI
+          resolve(payload)
+        })
+        .catch(resolve)
+  })
+}
 
-const secrets = require('./secrets.json')
 
 setInterval(() => {
   let promises = []
@@ -50,6 +74,7 @@ setInterval(() => {
     let payload = []
     data.forEach((result, i) => {
       payload.push({
+        index: i,
         label: secrets[i].website,
         email: secrets[i].email,
         code: result
