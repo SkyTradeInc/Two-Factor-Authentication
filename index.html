@@ -9,7 +9,7 @@ body {
 }
 
 .coderow {
-	padding: 10px 20px;
+		padding: 10px 20px;
     background-color: white;
     border-top: 15px solid #f2f2f2;
     font-family: 'Roboto', sans-serif;
@@ -35,9 +35,7 @@ h3 {
 	color: #757575;
 }
 .code {
-	color: #4285f4;
-    font-weight: 500;
-    font-size: xx-large;
+		color: #4285f4;
 }
 
 .codelabel {
@@ -55,6 +53,25 @@ h3 {
 .changeDown {
   color:#b94a48!important;
 }
+
+.code-2fa{
+	font-weight: 500;
+	font-size: xx-large;
+}
+
+.expiring {
+  animation: pulse 1s;
+}
+
+@keyframes pulse {
+  0% {
+    color: #b94a4885;
+  }
+  100% {
+    color: #b94a48;
+  }
+}
+
 </style>
 
 
@@ -82,11 +99,15 @@ h3 {
 			<br>
 			<div id="datarows">
 				<div class="coderow">
-					<div class="code changeDown">
-					000 000
-					</div>
 					<div class="codelabel">
-					Binance
+					Example
+					</div>
+					<div class="code-2FA code">
+					123 456
+					</div>
+
+					<div class="codelabel">
+					example@example.com
 					</div>
 				</div>
 			</div>
@@ -150,6 +171,10 @@ h3 {
 		document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi changeUp"></i>'
 	});
 
+	function secondsLeft() {
+		return (30 - ((Math.round(new Date().getTime() / 1000.0)) % 30))
+	}
+
 	function getQRcode(index) {
 		axios.post('/', {
 			index
@@ -172,7 +197,7 @@ h3 {
 					${data.label}
 					</div>
 					<div class="d-flex justify-content-between">
-						<div class="code">
+						<div class="code-2fa">
 						${code.join('')}
 						</div>
 						<div class="qrcode">
@@ -184,10 +209,17 @@ h3 {
 					<div class="codelabel">
 					${data.email}
 					</div>
-
 				</div>`
 		})
 		document.getElementById('datarows').innerHTML = render
+		const seconds = secondsLeft()
+		if(seconds < 5) {
+			$('.code-2fa').removeClass('code');
+			$('.code-2fa').addClass('expiring')
+		} else {
+			$('.code-2fa').removeClass('expiring');
+			$('.code-2fa').addClass('code')
+		}
 	});
 
   socket.on('disconnect', () => {
