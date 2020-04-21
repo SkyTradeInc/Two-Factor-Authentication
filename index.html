@@ -9,10 +9,10 @@ body {
 }
 
 .coderow {
-		padding: 10px 20px;
-    background-color: white;
-    border-top: 15px solid #f2f2f2;
-    font-family: 'Roboto', sans-serif;
+	padding: 10px 20px;
+  background-color: white;
+  border-top: 15px solid #f2f2f2;
+  font-family: 'Roboto', sans-serif;
 }
 
 .paddingL {
@@ -34,16 +34,18 @@ body {
 h3 {
 	color: #757575;
 }
+
 .code {
-		color: #4285f4;
+	color: #4285f4;
 }
 
 .codelabel {
-    color: #757575;
+  color: #757575;
 }
 
 .changeUp {
   color:#468847!important;
+	font-size: 10px;
 }
 
 .changeWarning {
@@ -52,6 +54,8 @@ h3 {
 
 .changeDown {
   color:#b94a48!important;
+	font-size: 10px;
+
 }
 
 .code-2fa{
@@ -85,16 +89,15 @@ h3 {
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js" integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" integrity="sha256-bQmrZe4yPnQrLTY+1gYylfNMBuGfnT/HKsCGX+9Xuqo=" crossorigin="anonymous"></script>
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+		<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
 	</head>
 
 	<body>
 		<div class="container">
 			<br>
 			<div class="d-flex justify-content-between align-items-center">
-			<h3 class="paddingL"> Two Factor Authentication</h3>
-			<span id="connectionStatus" class="paddingR float-md-right">
-				<i class="fas fa-wifi changeDown"></i>
-			</span>
+			<h3 class="paddingL"> Two-Factor Authentication</h3>
+			<span onclick="scanQR()"> <i class="fas fa-camera paddingR"></i> </span>
 			</div>
 			<br>
 			<div id="datarows">
@@ -112,7 +115,12 @@ h3 {
 				</div>
 			</div>
 			<div class="endrow"></div>
+			<br>
+			<span id="connectionStatus" class="paddingR float-md-right">
+				<i class="fas fa-circle changeDown"></i>
+			</span>
 		</div>
+
 
 
 
@@ -168,7 +176,7 @@ h3 {
   var socket = io('/');
 
 	socket.on('connect', () => {
-		document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-wifi changeUp"></i>'
+		document.getElementById('connectionStatus').innerHTML = '<i class="fas fa-circle changeUp"></i>'
 	});
 
 	function secondsLeft() {
@@ -185,6 +193,39 @@ h3 {
 			$('#qrmodal').modal('show')
 		})
 		.catch(()=>{})
+	}
+
+	function scanQR() {
+		var scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
+    scanner.addListener('scan',function(content){
+        alert(content);
+    });
+    Instascan.Camera.getCameras().then(function (cameras){
+        if(cameras.length>0){
+            scanner.start(cameras[0]);
+            $('[name="options"]').on('change',function(){
+                if($(this).val()==1){
+                    if(cameras[0]!=""){
+                        scanner.start(cameras[0]);
+                    }else{
+                        alert('No Front camera found!');
+                    }
+                }else if($(this).val()==2){
+                    if(cameras[1]!=""){
+                        scanner.start(cameras[1]);
+                    }else{
+                        alert('No Back camera found!');
+                    }
+                }
+            });
+        }else{
+            console.error('No cameras found.');
+            alert('No cameras found.');
+        }
+    }).catch(function(e){
+        console.error(e);
+        alert(e);
+    });
 	}
 
   socket.on('2fa', (payload) => {
