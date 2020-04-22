@@ -8,6 +8,13 @@ body {
 	user-select: none;
 }
 
+#preview{
+   width:100%;
+   height: 300px;
+   margin:0px auto;
+	 border: 1px solid;
+}
+
 .coderow {
 	padding: 10px 20px;
   background-color: white;
@@ -96,8 +103,11 @@ h3 {
 		<div class="container">
 			<br>
 			<div class="d-flex justify-content-between align-items-center">
-			<h3 class="paddingL"> Two-Factor Authentication</h3>
-			<span onclick="scanQR()"> <i class="fas fa-camera paddingR"></i> </span>
+				<h3 class="paddingL"> Two-Factor Authentication</h3>
+				<div>
+				<span onclick="scanQR()"> <i class="fas fa-camera paddingR"></i> </span>
+				<span onClick="toggleEdit()" id="editContainer"> <i class="fas fa-pen"></i> </span>
+				</div>
 			</div>
 			<br>
 			<div id="datarows">
@@ -122,9 +132,41 @@ h3 {
 		</div>
 
 
+<div id="qrscanmodal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="d-flex justify-content-between">
+				<div class="paddingL"> </div>
+        <h5 class="modal-title">Scan QR Code</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span class="paddingR" aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="container">
+				<video id="preview"></video>
+				<br>
+				<form>
+					<div class="form-group">
+						<input type="text" id="scannedSecret" class="form-control" placeholder="Secret - Required"/>
+					</div>
+					<div class="form-group">
+						<input type="text" id="scannedLabel" class="form-control" placeholder="Label - Required"/>
+					</div>
+					<div class="form-group">
+						<input type="text" id="scannedIssuer" class="form-control" placeholder="Issuer - Optional"/>
+					</div>
+				</form>
 
+      </div>
+      <div class="modal-footer">
+				<button type="button" class="btn btn-secondary bg-success" data-dismiss="modal">Add</button>
+        <button type="button" onclick="stopCamera()" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-		<div id="qrmodal" class="modal" tabindex="-1" role="dialog">
+<div id="qrmodal" class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="d-flex justify-content-between">
@@ -146,12 +188,34 @@ h3 {
   </div>
 </div>
 
+<div id="remove2famodal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+			<div class="d-flex justify-content-between">
+				<div class="paddingL"> </div>
+				<br>
+				<h5 class="modal-title">Are you sure you want to delete this key? This action is irreversible</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span class="paddingR" aria-hidden="true">&times;</span>
+				</button>
+			</div>
+      <div class="modal-footer">
+				<button type="button" class="btn btn-secondary bg-danger" data-dismiss="modal">Delete</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 	</body>
 </html>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 	let clicked = false, clickY;
+	let edit = false
+	let scanner = null
+
 	$(document).on({
 	    'mousemove': function(e) {
 	        clicked && updateScrollPos(e);
@@ -195,10 +259,71 @@ h3 {
 		.catch(()=>{})
 	}
 
+	function remove2FAQuestion(index) {
+			$('#remove2famodal').modal('show')
+	}
+
+	function remove2FA(index) {
+		remove2FAQuestion()
+		return
+		axios.delete('/', {
+			index
+		})
+		.then(() => {})
+		.catch(() => {})
+	}
+
+	function toggleEdit() {
+		edit = !edit
+		if(edit) {
+			document.getElementById('editContainer').innerHTML = '<i class="fas fa-check"></i>'
+		} else {
+			document.getElementById('editContainer').innerHTML = '<i class="fas fa-pen"></i>'
+		}
+	}
+
+	parseQR('otpauth://totp/lelllllll?secret=D@!FF15165@!D!@D&issuer=d2&penis=2')
+
+	function parseQR(qrString) {
+		if(!qrString.includes('otpauth://totp/')) return
+		let label = ''
+		let secret = ''
+		let issuer = ''
+
+		label = qrString.split('otpauth://totp/')[1].split('?')[0]
+		secret = qrString.split('?secret=')[1]
+		if(secret.includes('&')) {
+			secret = secret.split('&')[0]
+		}
+		issuer = qrString.includes('&issuer') ? qrString.split('&issuer=')[1] : ''
+		if(issuer.includes('&')) {
+			issuer = issuer.split('&')[0]
+		}
+
+		// console.log('Label', label)
+		// console.log('Secret', secret)
+		// console.log('Issuer', issuer)
+		// return;
+		document.getElementById('scannedLabel').value = label
+		document.getElementById('scannedSecret').value = secret
+		document.getElementById('scannedIssuer').value = issuer
+
+	}
+
+
+
+	function stopCamera() {
+		if(scanner) {
+			scanner.stop()
+			scanner = null
+		}
+	}
+
 	function scanQR() {
-		var scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
+		$('#qrscanmodal').modal('show')
+		scanner = new Instascan.Scanner({ video: document.getElementById('preview'), scanPeriod: 5, mirror: false });
     scanner.addListener('scan',function(content){
-        alert(content);
+        parseQR(content);
     });
     Instascan.Camera.getCameras().then(function (cameras){
         if(cameras.length>0){
@@ -242,9 +367,14 @@ h3 {
 						${code.join('')}
 						</div>
 						<div class="qrcode">
-							<span onclick="getQRcode('${data.index}')">
-							<i class="fas fa-qrcode"></i>
-							</span>
+							${edit ?
+								`<span onclick="remove2FAQuestion('${data.index}')">
+									<i class="fas fa-minus-circle"></i>
+								</span>`
+							: `<span onclick="getQRcode('${data.index}')">
+								<i class="fas fa-qrcode"></i>
+							</span>` }
+
 						</div>
 					</div>
 					<div class="codelabel">
