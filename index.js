@@ -15,7 +15,14 @@ const log = console.log
 const app = express()
 const port = process.env.SERVER_PORT || 6060
 
-const secrets = require('./secrets.json')
+let secrets = null
+
+function loadSecrets() {
+  let loadedSecrets = require('./secrets.json')
+  secrets = loadedSecrets
+}
+
+loadSecrets()
 
 const server = app.listen(port, () => {
   app.use(express.json())
@@ -33,6 +40,36 @@ const server = app.listen(port, () => {
         console.log(error)
         response.status(401).send(error)
       })
+  })
+  app.post('/add', (request, response) => {
+    const { label, secret, issuer } = request.body
+    let loadedSecrets = secrets
+    if(label && secret) {
+      loadedSecrets.push({
+        email: label,
+        secret: secret,
+        website: issuer
+      })
+      fs.writeFile('./secrets.json', JSON.stringify(loadedSecrets), (error) => {
+        if(error) return response.status(400).send(error);
+        loadSecrets()
+        return response.status(200);
+      })
+    } else {
+      return response.status(400).send('Missing Label or Secret');
+    }
+  })
+
+  app.post('/delete', (request, response) => {
+    const { index } = request.body
+    let loadedSecrets = secrets
+    loadedSecrets.splice(index, 1)
+    fs.writeFile('./secrets.json', JSON.stringify(loadedSecrets), (error) => {
+      if(error) return response.status(400).send(error);
+      loadSecrets()
+      return response.status(200).send('Success');
+    })
+
   })
   console.log(`Listening on port: ${port}`)
   process.title = `2FA | Listening on port ${port}`
@@ -61,7 +98,6 @@ function getTwoFactorURI(website, secret, email) {
         .catch(resolve)
   })
 }
-
 
 setInterval(() => {
   let promises = []
