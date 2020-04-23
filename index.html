@@ -159,7 +159,7 @@ h3 {
 
       </div>
       <div class="modal-footer">
-				<button type="button" class="btn btn-secondary bg-success" data-dismiss="modal">Add</button>
+				<button type="button" onclick="add2FA()" class="btn btn-secondary bg-success" data-dismiss="modal">Add</button>
         <button type="button" onclick="stopCamera()" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
@@ -199,8 +199,9 @@ h3 {
 					<span class="paddingR" aria-hidden="true">&times;</span>
 				</button>
 			</div>
+			<input id="deleteIndex" type="hidden"/>
       <div class="modal-footer">
-				<button type="button" class="btn btn-secondary bg-danger" data-dismiss="modal">Delete</button>
+				<button type="button" onClick="remove2FA()" class="btn btn-secondary bg-danger">Delete</button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </div>
@@ -235,6 +236,8 @@ h3 {
 	    $(window).scrollTop($(window).scrollTop() + (clickY - e.pageY));
 	}
 
+
+
 	let connected = false
 
   var socket = io('/');
@@ -245,6 +248,23 @@ h3 {
 
 	function secondsLeft() {
 		return (30 - ((Math.round(new Date().getTime() / 1000.0)) % 30))
+	}
+
+	function add2FA() {
+		const label = document.getElementById('scannedLabel').value
+		const secret = document.getElementById('scannedSecret').value
+		const issuer = document.getElementById('scannedIssuer').value
+		if(!label || !secret) return;
+		axios.post('/add', {
+			label,
+			secret,
+			issuer,
+		})
+		.then((response) => {
+			console.log(response.data)
+
+		})
+		.catch(()=>{})
 	}
 
 	function getQRcode(index) {
@@ -260,16 +280,19 @@ h3 {
 	}
 
 	function remove2FAQuestion(index) {
+			document.getElementById('deleteIndex').value = index
 			$('#remove2famodal').modal('show')
 	}
 
-	function remove2FA(index) {
-		remove2FAQuestion()
-		return
-		axios.delete('/', {
+	function remove2FA() {
+		const index = document.getElementById('deleteIndex').value
+		axios.post('/delete', {
 			index
 		})
-		.then(() => {})
+		.then((response) => {
+			console.log(response)
+			$('#remove2famodal').modal('hide')
+		})
 		.catch(() => {})
 	}
 
@@ -281,8 +304,6 @@ h3 {
 			document.getElementById('editContainer').innerHTML = '<i class="fas fa-pen"></i>'
 		}
 	}
-
-	parseQR('otpauth://totp/lelllllll?secret=D@!FF15165@!D!@D&issuer=d2&penis=2')
 
 	function parseQR(qrString) {
 		if(!qrString.includes('otpauth://totp/')) return
